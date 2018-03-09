@@ -44,7 +44,7 @@ your application. The instructions that follow document ONE way to do this.
 1. Using your browser access the Wildfly management console at
 http://localhost:9990.
 2. Username and password are admin/admin.
-3. Click Add in the upper left-hand corner.
+3. Click Deployments and then click Add in the upper left-hand corner.
 4. Make sure Upload a new deployment is selected and click Next.
 5. Select the WAR file that you want to deploy and click Next.
 6. Click Finish. You should see a successful deployment message.
