@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.OptimisticLockException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -14,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import edu.vt.crest.hr.entity.EmployeeEntity;
 import edu.vt.crest.hr.services.EmployeeService;
 
@@ -24,39 +26,51 @@ import edu.vt.crest.hr.services.EmployeeService;
 @Path("/employees")
 public class EmployeeResource {
 
-	//Used to interact with EmployeeEntity(s)
+	// Used to interact with EmployeeEntity(s)
 	@Inject
 	EmployeeService employeeService;
 
 	/**
 	 * TODO - Implement this method
-	 * @param employee the EmployeeEntity to create
+	 * 
+	 * @param employee
+	 *            the EmployeeEntity to create
 	 * @return a Response containing the new EmployeeEntity
 	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response create(EmployeeEntity employee) {
-		return null;
+		EmployeeEntity currentEmployee = employeeService.createEmployee(employee);
+		return Response.ok(currentEmployee).build();
 	}
 
 	/**
 	 * TODO - Implement this method
-	 * @param id of the EmployeeEntity to return
+	 * 
+	 * @param id
+	 *            of the EmployeeEntity to return
 	 * @return a Response containing the matching EmployeeEntity
 	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response findById(@PathParam("id") Long id) {
-		return null;
+		EmployeeEntity currentEmployee = employeeService.findById(id);
+		if (currentEmployee != null) {
+			return Response.ok(currentEmployee).build();
+		}
+		return Response.noContent().build();
 	}
 
 	/**
 	 * TODO - Implement this method
-	 * @param startPosition the index of the first EmployeeEntity to return
-	 * @param maxResult the maximum number of EmployeeEntity(s) to return
-	 *                  beyond the startPosition
+	 * 
+	 * @param startPosition
+	 *            the index of the first EmployeeEntity to return
+	 * @param maxResult
+	 *            the maximum number of EmployeeEntity(s) to return beyond the
+	 *            startPosition
 	 * @return a list of EmployeeEntity(s)
 	 */
 	@GET
@@ -64,13 +78,16 @@ public class EmployeeResource {
 	public List<EmployeeEntity> listAll(@QueryParam("start") Integer startPosition,
 			@QueryParam("max") Integer maxResult) {
 
-		return null;
+		return employeeService.listAll(startPosition, maxResult);
 	}
 
 	/**
 	 * TODO - Implement this method
-	 * @param id the id of the EmployeeEntity to update
-	 * @param employee the entity used to update
+	 * 
+	 * @param id
+	 *            the id of the EmployeeEntity to update
+	 * @param employee
+	 *            the entity used to update
 	 * @return a Response containing the updated EmployeeEntity
 	 */
 	@PUT
@@ -78,6 +95,15 @@ public class EmployeeResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response update(@PathParam("id") Long id, EmployeeEntity employee) {
-		return null;
+		try {
+			EmployeeEntity currentEmployee = employeeService.update(id, employee);
+			if (currentEmployee != null) {
+				return Response.ok(currentEmployee).build();
+			} else {
+				return Response.notModified().build();
+			}
+		} catch (OptimisticLockException e) {
+			return Response.status(Response.Status.CONFLICT).entity(e.getEntity()).build();
+		}
 	}
 }

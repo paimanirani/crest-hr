@@ -1,15 +1,15 @@
 package edu.vt.crest.hr.services;
 
 import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.PersistenceContextType;
+import javax.persistence.Query;
 
 import edu.vt.crest.hr.entity.DepartmentEntity;
-import edu.vt.crest.hr.entity.EmployeeEntity;
 
 /**
  * Implements a DepartmentService
@@ -17,39 +17,53 @@ import edu.vt.crest.hr.entity.EmployeeEntity;
 @ApplicationScoped
 public class DepartmentServiceBean implements DepartmentService {
 
-  @PersistenceContext
-  private EntityManager em;
+	@PersistenceContext(unitName = "crest-hr-persistence-unit", type = PersistenceContextType.EXTENDED)
+	private EntityManager em;
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public DepartmentEntity createDepartment(DepartmentEntity department) {
-    return null;
-  }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DepartmentEntity createDepartment(DepartmentEntity department) {
+		em.persist(department);
+		return department;
+	}
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public DepartmentEntity findById(Long id) {
-    return null;
-  }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DepartmentEntity findById(Long id) {
+		return em.find(DepartmentEntity.class, id);
+	}
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public List<DepartmentEntity> listAll(Integer startPosition, Integer maxResult) {
-    return null;
-  }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<DepartmentEntity> listAll(Integer startPosition, Integer maxResult) {
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public DepartmentEntity update(Long id, DepartmentEntity department) throws OptimisticLockException {
-    return null;
-  }
+		Query theQuery = em.createQuery("select d from DepartmentEntity d", DepartmentEntity.class);
+		theQuery.setFirstResult(startPosition);
+		theQuery.setMaxResults(maxResult);
+		return theQuery.getResultList();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DepartmentEntity update(Long id, DepartmentEntity department) throws OptimisticLockException {
+		DepartmentEntity departmentDB = em.find(DepartmentEntity.class, id);
+		if (departmentDB != null) {
+			em.getTransaction().begin();
+			departmentDB.setIdentifier(department.getIdentifier());
+			departmentDB.setName(department.getName());
+			departmentDB.setVersion(department.getVersion());
+			em.getTransaction().commit();
+
+		}
+		return departmentDB;
+	}
 
 }
